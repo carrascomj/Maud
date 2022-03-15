@@ -2,6 +2,9 @@
 
 import os
 
+import pytest
+from pydantic import ValidationError
+
 import maud.io as io
 
 
@@ -28,3 +31,11 @@ def test_load_maud_input():
     assert "r1" in mi.priors.priors_kcat.location.reset_index()["enzyme_id"].values
     for key, expected_codes in expected_stan_coords.items():
         assert mi.stan_coords.__dict__[key] == expected_codes
+
+
+def test_maud_input_validation_catches_missing_kms():
+    """Test that the validation raises an error if there are missing Kms."""
+    with pytest.raises(ValidationError):
+        _ = io.load_maud_input(
+            data_path=os.path.join(data_path, "missing_kms"), mode="sample"
+        )
