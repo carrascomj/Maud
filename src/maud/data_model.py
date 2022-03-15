@@ -1,5 +1,4 @@
-# Copyright (C) 2019 Novo Nordisk Foundation Center for Biosustainability,
-# Technical University of Denmark.
+# Copyright (C) 2019 Novf Denmark.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,44 +16,40 @@
 """Definitions of Maud-specific objects."""
 
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 from cmdstanpy import CmdStanMCMC
 from numpy.linalg.linalg import LinAlgError
+from pydantic import BaseModel, Field, root_validator, validator
 
 
-class Compartment:
+class Compartment(BaseModel):
     """Constructor for compartment objects.
 
     :param id: compartment id, use a BiGG id if possible.
     :param name: compartment name.
     :param volume: compartment volume.
     """
-
-    def __init__(self, id: str, name: str = None, volume: float = 1.0):
-        self.id = id
-        self.name = name
-        self.volume = volume
+    id: str
+    name: Optional[str] = None
+    volume: float = 1.0
 
 
-class Metabolite:
+class Metabolite(BaseModel):
     """Constructor for metabolite objects.
 
     :param id: metabolite id, use a BiGG id if possible.
     :param name: metabolite name.
     :param external_id: metabolite name.
     """
-
-    def __init__(self, id: str, name: str = None, inchi_key: str = None):
-        self.id = id
-        self.name = name
-        self.inchi_key = inchi_key
+    id: str
+    name: Optional[str] = None
+    inchi_key: Optional[str] = None
 
 
-class MetaboliteInCompartment:
+class MetaboliteInCompartment(BaseModel):
     """A metabolite, in a compartment, or mic for short.
 
     :param id: this mic's id, usually <metabolite_id>_<compartment_id>.
@@ -63,23 +58,14 @@ class MetaboliteInCompartment:
     :param balanced: Does this mic have stable concentration at steady state?
 
     """
-
-    def __init__(
-        self,
-        id: str,
-        metabolite_id: str,
-        compartment_id: str,
-        name: str = None,
-        balanced: bool = None,
-    ):
-        self.id = id
-        self.name = name
-        self.metabolite_id = metabolite_id
-        self.compartment_id = compartment_id
-        self.balanced = balanced
+    id: str
+    metabolite_id: str
+    compartment_id: str
+    name: Optional[str] = None
+    balanced: Optional[bool] = None
 
 
-class Modifier:
+class Modifier(BaseModel):
     """Constructor for modifier objects.
 
     :param mic_id: the id of the modifying metabolite-in-compartment
@@ -87,37 +73,33 @@ class Modifier:
     :param modifier_type: what is the modifier type, e.g.
     'allosteric_activator', 'allosteric_inhibitor', 'competitive_inhibitor'
     """
+    mic_id: str
+    enzyme_id: str
+    modifier_type: Optional[str] = None
+    allosteric: bool = None
 
-    def __init__(self, mic_id: str, enzyme_id: str, modifier_type: str = None):
-        allosteric_types = ["allosteric_inhibitor", "allosteric_activator"]
-        self.mic_id = mic_id
-        self.enzyme_id = enzyme_id
-        self.modifier_type = modifier_type
-        self.allosteric = modifier_type in allosteric_types
+    @validator("allosteric", pre=True, always=True)
+    def default_allosteric(cls, _v, *, values, **kwargs):
+        return values["modifier_type"] in [
+            "allosteric_inhibitor",
+            "allosteric_activator",
+        ]
 
 
-class Parameter:
+class Parameter(BaseModel):
     """Constructor for parameter object.
 
     :param id: parameter id
     :param enzyme_id: id of the enzyme associated with the parameter
     :param metabolite_id: id of the metabolite associated with the parameter if any
     """
-
-    def __init__(
-        self,
-        id: str,
-        enzyme_id: str,
-        metabolite_id: str = None,
-        is_thermodynamic: bool = False,
-    ):
-        self.id = id
-        self.enzyme_id = enzyme_id
-        self.metabolite_id = metabolite_id
-        self.is_thermodynamic = is_thermodynamic
+    id: str
+    enzyme_id: str
+    metabolite_id: Optional[str] = None
+    is_thermodynamic: bool = False
 
 
-class Enzyme:
+class Enzyme(BaseModel):
     """Constructor for the enzyme object.
 
     :param id: a string identifying the enzyme
@@ -126,29 +108,22 @@ class Enzyme:
     :param modifiers: modifiers, given as {'modifier_id': modifier_object}
     :param subunits: number of subunits in enzymes
     """
+    id: str
+    reaction_id: str
+    name: str
+    modifiers: Dict[str, List[Modifier]] = Field(default=defaultdict())
+    subunits: int = 1
+    allosteric: bool = None
 
-    def __init__(
-        self,
-        id: str,
-        reaction_id: str,
-        name: str,
-        modifiers: Dict[str, List[Modifier]] = None,
-        subunits: int = 1,
-    ):
-        if modifiers is None:
-            modifiers = defaultdict()
-        self.id = id
-        self.reaction_id = reaction_id
-        self.name = name
-        self.modifiers = modifiers
-        self.subunits = subunits
-        self.allosteric = (
-            len(self.modifiers["allosteric_activator"]) > 0
-            or len(self.modifiers["allosteric_inhibitor"]) > 0
+    @validator("allosteric", pre=True, always=True)
+    def default_allosteric(cls, _v, *, values, **kwargs):
+        return (
+            len(values["modifiers"]["allosteric_activator"]) > 0
+            or len(values["modifiers"]["allosteric_inhibitor"]) > 0
         )
 
 
-class Reaction:
+class Reaction(BaseModel):
     """Constructor for the reaction object.
 
     :param id: reaction id, use a BiGG id if possible.
@@ -160,29 +135,27 @@ class Reaction:
     :param enzymes: Dictionary mapping enzyme ids to Enzyme objects
     :param water_stroichiometry: Reaction's stoichiometric coefficient for water
     """
+    id: str
+    name: Optional[str] = None
+    # TODO: enum might be better
+    reaction_mechanism: str
+    stoichiometry: Optional[Dict[str, float]] = Field(default=defaultdict())
+    enzymes: Optional[List[Enzyme]] = None
+    water_stoichiometry: float = 0
 
-    def __init__(
-        self,
-        id: str,
-        name: str,
-        reaction_mechanism: str,
-        stoichiometry: Dict[str, float],
-        enzymes: List[Enzyme],
-        water_stoichiometry: float = 0,
-    ):
-        if stoichiometry is None:
-            stoichiometry = defaultdict()
-        if enzymes is None:
-            enzymes = []
-        self.id = id
-        self.name = name if name is not None else id
-        self.reaction_mechanism = reaction_mechanism
-        self.stoichiometry = stoichiometry
-        self.enzymes = enzymes
-        self.water_stoichiometry = water_stoichiometry
+    @validator("name", pre=True, always=True)
+    def default_name_is_id(cls, v, *, values, **kwargs):
+        return v or values["id"]
+
+    @validator("reaction_mechanism")
+    def validate_reaction_mechanism(cls, v, field):
+        assert v in [
+            "reversible_modular_rate_law", "drain", "irreversible_modular_rate_law"
+        ], "must be one of the three supported reaction mechanisms"
+        return v
 
 
-class Phosphorylation:
+class Phosphorylation(BaseModel):
     """Constructor for the phosphorylation object.
 
     :param id: phosphorylation id. use BIGG id if possible.
@@ -193,23 +166,15 @@ class Phosphorylation:
     target enzyme.
     :enzyme_id: the target enzyme of the interaction
     """
-
-    def __init__(
-        self,
-        id: str,
-        enzyme_id: str,
-        name: str = None,
-        activating: bool = None,
-        inhibiting: bool = None,
-    ):
-        self.id = id
-        self.name = name
-        self.activating = activating
-        self.inhibiting = inhibiting
-        self.enzyme_id = enzyme_id
+    id: str
+    enzyme_id: str
+    name: Optional[str] = None
+    # bools are None by default
+    activating: bool = None
+    inhibiting: bool = None
 
 
-class KineticModel:
+class KineticModel(BaseModel):
     """Constructor for representation of a system of metabolic reactions.
 
     :param model_id: id of the kinetic model
@@ -218,26 +183,15 @@ class KineticModel:
     :param compartments: list of compartment objects
     :param mic: list of MetaboliteInCompartment objects
     """
-
-    def __init__(
-        self,
-        model_id: str,
-        metabolites: List[Metabolite],
-        reactions: List[Reaction],
-        compartments: List[Compartment],
-        mics: List[MetaboliteInCompartment],
-        phosphorylation: List[Phosphorylation] = None,
-    ):
-        self.model_id = model_id
-        self.metabolites = metabolites
-        self.reactions = reactions
-        self.compartments = compartments
-        self.mics = mics
-        self.phosphorylation = phosphorylation if phosphorylation is not None else []
+    model_id: str
+    metabolites: List[Metabolite]
+    reactions: List[Reaction]
+    compartments: List[Compartment]
+    mics: List[MetaboliteInCompartment]
+    phosphorylation: Optional[List[Phosphorylation]] = None
 
 
-@dataclass
-class MeasurementSet:
+class MeasurementSet(BaseModel):
     """A container for a complete set of measurements, including knockouts."""
 
     yconc: pd.DataFrame
@@ -246,73 +200,82 @@ class MeasurementSet:
     enz_knockouts: pd.DataFrame
     phos_knockouts: pd.DataFrame
 
+    class Config:
+        arbitrary_types_allowed = True
 
-class Experiment:
+
+class Experiment(BaseModel):
     """Constructor for Experiment object.
 
     :param id: id for each experiment
     :param sample: if the experiment will be used in parameter sampling
     :param predict: if the experiment will be used in predictive samplig
     """
-
-    def __init__(self, id: str, sample: bool, predict: bool):
-        self.id = id
-        self.sample = sample
-        self.predict = predict
+    id: str
+    sample: bool
+    predict: bool
 
 
-@dataclass
-class IndPrior1d:
+class IndPrior1d(BaseModel):
     """Independent location/scale prior for a 1-dimentional parameter."""
 
     parameter_name: str
     location: pd.Series
     scale: pd.Series
 
-    def __post_init__(self):
-        """Check that location and scale indexes match."""
-        if not self.location.index.equals(self.scale.index):
+    @root_validator
+    def root_validator(cls, values):
+        if not values["location"].index.equals(values["scale"].index):
             raise ValueError("Location index doesn't match scale index.")
+        return values
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class IndPrior2d:
+class IndPrior2d(BaseModel):
     """Independent location/scale prior for a 2-dimensional parameter."""
 
     parameter_name: str
     location: pd.DataFrame
     scale: pd.DataFrame
 
-    def __post_init__(self):
-        """Check that location and scale indexes and columns match."""
-        if not self.location.index.equals(self.scale.index):
+    @root_validator
+    def root_validator(cls, values):
+        if not values["location"].index.equals(values["scale"].index):
             raise ValueError("Location index doesn't match scale index.")
-        if not self.location.columns.equals(self.scale.columns):
+        if not values["location"].columns.equals(values["scale"].columns):
             raise ValueError("Location columns don't match scale columns.")
+        return values
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class MultiVariateNormalPrior1d:
+class MultiVariateNormalPrior1d(BaseModel):
     """a location vector and covariance matrix prior for a 1-dimensional parameter."""
 
     parameter_name: str
     location: pd.Series
     covariance_matrix: pd.DataFrame
 
-    def __post_init__(self):
-        """Check that indexes match, and that covariance matrix is valid."""
-        if not self.location.index.equals(self.covariance_matrix.index):
+    @root_validator
+    def root_validator(cls, values):
+        if not values["location"].index.equals(values["covariance_matrix"].index):
             raise ValueError("Location index doesn't match scale index.")
-        if not self.location.index.equals(self.covariance_matrix.columns):
-            raise ValueError("Location columns don't match scale columns.")
+        if not values["location"].index.equals(values["covariance_matrix"].columns):
+            raise ValueError("Location index doesn't match scale columns.")
         try:
-            np.linalg.cholesky(self.covariance_matrix.values)
+            np.linalg.cholesky(values["covariance_matrix"].values)
         except LinAlgError as e:
             raise ValueError("Covariance matrix is not positive definite") from e
+        return values
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class PriorSet:
+class PriorSet(BaseModel):
     """Object containing all priors for a MaudInput."""
 
     priors_kcat: IndPrior1d
@@ -329,8 +292,7 @@ class PriorSet:
     priors_conc_phos: IndPrior2d
 
 
-@dataclass
-class StanCoordSet:
+class StanCoordSet(BaseModel):
     """Object containing human-readable indexes for Maud's parameters.
 
     These are "coordinates" in the sense of xarray
@@ -368,8 +330,7 @@ class StanCoordSet:
     phos_ko_enzs: List[str]
 
 
-@dataclass
-class MaudConfig:
+class MaudConfig(BaseModel):
     """User's configuration for a Maud input.
 
     :param name: name for the input. Used to name the output directory
@@ -409,7 +370,7 @@ class MaudConfig:
     steady_state_threshold_rel: float
 
 
-class MaudInput:
+class MaudInput(BaseModel):
     """Everything that is needed to run Maud.
 
     :param kinetic_system: a KineticSystem object
@@ -418,24 +379,35 @@ class MaudInput:
     :param measurement_set: a list of Measurement objects
     :param inits: a dictionary of initial parameter values
     """
+    config: MaudConfig
+    kinetic_model: KineticModel
+    priors: PriorSet
+    stan_coords: StanCoordSet
+    measurements: MeasurementSet
+    all_experiments: List[Experiment]
+    inits: Dict[str, Union[np.ndarray, pd.Series, pd.DataFrame]]
 
-    def __init__(
-        self,
-        config: MaudConfig,
-        kinetic_model: KineticModel,
-        priors: PriorSet,
-        stan_coords: StanCoordSet,
-        measurements: MeasurementSet,
-        all_experiments: List[Experiment],
-        inits: Dict[str, np.ndarray],
-    ):
-        self.config = config
-        self.kinetic_model = kinetic_model
-        self.priors = priors
-        self.stan_coords = stan_coords
-        self.measurements = measurements
-        self.all_experiments = all_experiments
-        self.inits = inits
+    @root_validator
+    def root_validator(cls, values):
+        kinetic_model, priors_km = (
+            values.get("kinetic_model"),
+            values.get("priors").priors_km,
+        )
+        reactions = kinetic_model.reactions
+        for reaction in reactions:
+            enz_index = [enz.id for enz in reaction.enzymes]
+            mic_index = list(reaction.stoichiometry.keys())
+            multi_indexer = (enz_index, mic_index)
+            assert (
+                not priors_km.location.loc[multi_indexer].isna().any()
+            ), f"reaction {reaction.id} has badformed or missing location Km"
+            assert (
+                not priors_km.scale.loc[multi_indexer].isna().any()
+            ), f"reaction {reaction.id} has badformed or missing scale Km"
+        return values
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SimulationStudyOutput:
