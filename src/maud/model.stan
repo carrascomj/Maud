@@ -82,6 +82,7 @@ data {
   matrix<lower=0,upper=1>[N_experiment, N_enzyme] is_knockout;
   matrix<lower=0,upper=1>[N_experiment, N_phosphorylation_enzymes] is_phos_knockout;
   vector<lower=1>[N_enzyme] subunits;
+  array[2] vector[N_experiment] priors_pmf;
   // configuration
   vector<lower=0>[N_mic] conc_init[N_experiment];
   real rel_tol; 
@@ -109,6 +110,7 @@ parameters {
   vector[N_ai] log_diss_t_z;
   vector[N_aa] log_diss_r_z;
   vector[N_ae] log_transfer_constant_z;
+  vector[N_experiment] pmf_z;
   array[N_experiment] vector[N_drain] drain_z;
   array[N_experiment] vector[N_enzyme] log_conc_enzyme_z;
   array[N_experiment] vector[N_phosphorylation_enzymes] log_conc_phos_z;
@@ -123,6 +125,7 @@ transformed parameters {
   vector[N_aa] diss_r = unz_log_1d(priors_diss_r, log_diss_r_z);
   vector[N_ae] transfer_constant = unz_log_1d(priors_transfer_constant, log_transfer_constant_z);
   vector[N_phosphorylation_enzymes] kcat_phos = unz_log_1d(priors_kcat_phos, log_kcat_phos_z);
+  vector[N_experiment] pmf = unz_1d(priors_pmf, pmf_z);
   array[N_experiment] vector[N_drain] drain = unz_2d(priors_drain, drain_z);
   array[N_experiment] vector[N_enzyme] conc_enzyme = unz_log_2d(priors_conc_enzyme, log_conc_enzyme_z);
   array[N_experiment] vector[N_unbalanced] conc_unbalanced = unz_log_2d(priors_conc_unbalanced, log_conc_unbalanced_z);
@@ -157,6 +160,7 @@ transformed parameters {
                   kcat_phos,
                   conc_phos_experiment,
                   drain[e],
+                  pmf[e],
                   S,
                   subunits,
                   edge_type,
@@ -196,6 +200,7 @@ transformed parameters {
                                              kcat_phos,
                                              conc_phos_experiment,
                                              drain[e],
+                                             pmf[e],
                                              S,
                                              subunits,
                                              edge_type,
@@ -259,6 +264,7 @@ model {
     log_conc_enzyme_z[ex] ~ std_normal();
     log_conc_phos_z[ex] ~ std_normal();
     drain_z[ex] ~ std_normal();
+    pmf_z[ex] ~ std_normal();
   }
   if (LIKELIHOOD == 1){
     for (c in 1:N_conc_measurement)
@@ -330,6 +336,6 @@ generated quantities {
                                              pi_ix_bounds,
                                              subunits);
 
-    reversibility[e] = get_reversibility(dgrs, S, conc[e], edge_type);
+    reversibility[e] = get_reversibility(dgrs, S, pmf[e], conc[e], edge_type);
   }
 }

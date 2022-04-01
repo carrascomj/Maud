@@ -152,13 +152,12 @@ functions {
     return inv(denom);
   }
 
-  vector get_reversibility(vector dgr, matrix S, vector conc, int[] edge_type){
+  vector get_reversibility(vector dgr, matrix S, real pmf, vector conc, int[] edge_type){
     real RT = 0.008314 * 310.15;
     // TODO: Z depends on ΔpH (ic-ex), assuming 1
     real Z = 2.30225 * RT;
-    // TODO: Proton-motive force (assuming -100) times the Faraday constant
-    real pmf_F = -100 * 0.023062;
-    // TODO: 1 + 0.1 = 1 + 10**(pKa (acetate) ** extracellular pH (5)) (e/i)
+    real pmf_F = 2.30225 * pmf;
+    // TODO: 1 + 0.1 = 1 + 10**(pKa (acetate) - extracellular pH (5)) (e/i)
     real ace_phpk = 0.6712690015;
     int N_edge = cols(S);
     vector[N_edge] reaction_quotient = S' * log(conc);
@@ -285,6 +284,7 @@ functions {
                        vector kcat_phos,
                        vector conc_phos,
                        vector drain,
+                       real pmf,
                        matrix S,
                        vector subunits,
                        int[] edge_type,
@@ -311,7 +311,7 @@ functions {
                        int[,] pi_ix_bounds){
     int N_edge = cols(S);
     vector[N_edge] vmax = get_vmax_by_edge(enzyme, kcat, edge_to_enzyme, edge_type);
-    vector[N_edge] reversibility = get_reversibility(dgr, S, conc, edge_type);
+    vector[N_edge] reversibility = get_reversibility(dgr, S, pmf, conc, edge_type);
     vector[N_edge] free_enzyme_ratio = get_free_enzyme_ratio(conc,
                                                              S,
                                                              km,
@@ -377,6 +377,7 @@ functions {
                       vector kcat_phos,
                       vector conc_phos,
                       vector drain,
+                      real pmf,
                       matrix S,
                       vector subunits,
                       int[] edge_type,
@@ -416,6 +417,7 @@ functions {
                                               kcat_phos,
                                               conc_phos,
                                               drain,
+                                              pmf,
                                               S,
                                               subunits,
                                               edge_type,

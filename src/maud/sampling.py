@@ -110,7 +110,8 @@ def variational(mi: MaudInput, output_dir: str) -> CmdStanVB:
         **{
             **DEFAULT_VARIATIONAL_CONFIG,
             **mi_options,
-            **{"output_dir": output_dir},
+            **{
+                "output_dir": output_dir},
         },
     )
 
@@ -421,6 +422,7 @@ def get_prior_dict(ps: PriorSet) -> dict:
         "priors_diss_t": unpack(ps.priors_diss_t),
         "priors_diss_r": unpack(ps.priors_diss_r),
         "priors_kcat_phos": unpack(ps.priors_kcat_phos),
+        "priors_pmf": unpack(ps.priors_pmf),
         "priors_transfer_constant": unpack(ps.priors_transfer_constant),
         "priors_conc_unbalanced": unpack(ps.priors_conc_unbalanced),
         "priors_conc_enzyme": unpack(ps.priors_conc_enzyme),
@@ -650,6 +652,14 @@ def get_input_data(mi: MaudInput) -> dict:
         },
         index=mi.stan_coords.edges,
     ).astype(int)
+    sorted_pmf = (
+        pd.Series(
+            {e: codify(mi.stan_coords.pmf)[e] for e in mi.stan_coords.pmf},
+            index=mi.stan_coords.pmf,
+        )
+        .fillna(0)
+        .astype(int)
+    )
     phos_info = get_phos_info(mi)
     mod_info = get_modifier_info(mi)
     water_stoichiometry_enzyme = {
