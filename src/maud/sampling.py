@@ -584,6 +584,8 @@ def get_edge_type(edge_id: str, mi: MaudInput):
         return 2
     elif reaction_mechanism == "irreversible_modular_rate_law":
         return 3
+    elif reaction_mechanism == "uniport_transport":
+        return 4
     else:
         raise ValueError(f"Edge {reaction_mechanism} is of unknown type.")
 

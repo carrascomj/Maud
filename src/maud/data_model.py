@@ -153,8 +153,8 @@ class Reaction:
 
     :param id: reaction id, use a BiGG id if possible.
     :param name: reaction name.
-    :param reaction_mechanism: either "reversible_modular_rate_law", "drain", or,
-    "irreversible_modular_rate_law".
+    :param reaction_mechanism: either "reversible_modular_rate_law", "drain",
+    "irreversible_modular_rate_law", or "uniport_transport."
     :param stoichiometry: reaction stoichiometry,
     e.g. for the reaction: 2pg <-> 3pg we have {'2pg'; -1, '3pg': 1}
     :param enzymes: Dictionary mapping enzyme ids to Enzyme objects

@@ -53,7 +53,8 @@ data {
   array[2, N_experiment] vector[N_drain] priors_drain;
   // network properties
   matrix[N_mic, N_edge] S;
-  int<lower=1,upper=3> edge_type[N_edge];  // 1 = reversible modular rate law, 2 = drain
+  // 1 = reversible modular rate law; 2 = drain; 3 = irreversible; 4 = uniport
+  int<lower=1,upper=4> edge_type[N_edge];  
   int<lower=0,upper=N_enzyme> edge_to_enzyme[N_edge];  // 0 if drain
   int<lower=0,upper=N_ae> edge_to_tc[N_edge];  // 0 if non-allosteric
   int<lower=0,upper=N_drain> edge_to_drain[N_edge];  // 0 if enzyme
