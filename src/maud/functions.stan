@@ -156,7 +156,7 @@ functions {
     real RT = 0.008314 * 310.15;
     // TODO: Z depends on ΔpH (ic-ex), assuming 1
     real Z = 2.30225 * RT;
-    real pmf_F = 2.30225 * pmf;
+    real pmf_F = 96.5 * pmf;
     // TODO: 1 + 0.1 = 1 + 10**(pKa (acetate) - extracellular pH (5)) (e/i)
     real ace_phpk = 0.6712690015;
     int N_edge = cols(S);
@@ -167,7 +167,7 @@ functions {
         out[f] = 1 - exp((dgr[f] + RT * reaction_quotient[f])/RT);
       else if (edge_type[f] == 4)
         // ΔGt associated to a negatively charged molecule (1 charge).
-        out[f] = 1 - exp((RT * (reaction_quotient[f] + log(ace_phpk)) + Z - pmf_F)/RT);
+        out[f] = 1 - exp((RT * (reaction_quotient[f] + log(ace_phpk)) + Z + pmf_F)/RT);
       else
         out[f] = 1;
     }
