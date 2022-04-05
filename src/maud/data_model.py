@@ -169,6 +169,7 @@ class Reaction:
         stoichiometry: Dict[str, float],
         enzymes: List[Enzyme],
         water_stoichiometry: float = 0,
+        transported_charge: float = 0.,
     ):
         if stoichiometry is None:
             stoichiometry = defaultdict()
@@ -180,6 +181,7 @@ class Reaction:
         self.stoichiometry = stoichiometry
         self.enzymes = enzymes
         self.water_stoichiometry = water_stoichiometry
+        self.transported_charge = transported_charge
 
 
 class Phosphorylation:

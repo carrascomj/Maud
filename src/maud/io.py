@@ -364,6 +364,9 @@ def parse_toml_reaction(raw: dict) -> Reaction:
     water_stoichiometry = (
         raw["water_stoichiometry"] if "water_stoichiometry" in raw.keys() else 0
     )
+    transported_charge = (
+        raw["transported_charge"] if "transported_charge" in raw else 0
+    )
     for e in raw["enzyme"]:
         modifiers = {
             "competitive_inhibitor": [],
@@ -400,6 +403,7 @@ def parse_toml_reaction(raw: dict) -> Reaction:
         stoichiometry=raw["stoichiometry"],
         enzymes=enzymes,
         water_stoichiometry=water_stoichiometry,
+        transported_charge=transported_charge,
     )
 
 

@@ -652,16 +652,14 @@ def get_input_data(mi: MaudInput) -> dict:
         },
         index=mi.stan_coords.edges,
     ).astype(int)
-    sorted_pmf = (
-        pd.Series(
-            {e: codify(mi.stan_coords.pmf)[e] for e in mi.stan_coords.pmf},
-            index=mi.stan_coords.pmf,
-        )
-        .fillna(0)
-        .astype(int)
-    )
     phos_info = get_phos_info(mi)
     mod_info = get_modifier_info(mi)
+    transported_charge_enzyme = {
+        e.id: next(
+            filter(lambda r: e in r.enzymes, mi.kinetic_model.reactions)
+        ).transported_charge
+        for e in sorted_enzymes
+    }
     water_stoichiometry_enzyme = {
         e.id: next(
             filter(lambda r: e in r.enzymes, mi.kinetic_model.reactions)
@@ -669,6 +667,15 @@ def get_input_data(mi: MaudInput) -> dict:
         for e in sorted_enzymes
     }
     water_stoichiometry = pd.Series(water_stoichiometry_enzyme, index=S.columns).fillna(
+        0
+    )
+    transported_charge_enzyme = {
+        e.id: next(
+            filter(lambda r: e in r.enzymes, mi.kinetic_model.reactions)
+        ).transported_charge
+        for e in sorted_enzymes
+    }
+    transported_charge = pd.Series(transported_charge_enzyme, index=S.columns).fillna(
         0
     )
     mic_to_met = [
@@ -752,6 +759,7 @@ def get_input_data(mi: MaudInput) -> dict:
             "edge_to_drain": edge_to_drain.values,
             "edge_to_reaction": edge_to_reaction.values,
             "water_stoichiometry": water_stoichiometry.values,
+            "trans_charge": transported_charge.values,
             "mic_to_met": mic_to_met,
             "km_lookup": km_lookup,
             "ki_lookup": ki_lookup,

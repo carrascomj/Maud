@@ -79,6 +79,7 @@ data {
   array[N_edge, 2] int pi_ix_bounds;
   int<lower=1,upper=N_metabolite> mic_to_met[N_mic];
   vector[N_edge] water_stoichiometry;
+  vector[N_edge] trans_charge;
   matrix<lower=0,upper=1>[N_experiment, N_enzyme] is_knockout;
   matrix<lower=0,upper=1>[N_experiment, N_phosphorylation_enzymes] is_phos_knockout;
   vector<lower=1>[N_enzyme] subunits;
@@ -160,6 +161,7 @@ transformed parameters {
                   kcat_phos,
                   conc_phos_experiment,
                   drain[e],
+                  trans_charge,
                   pmf[e],
                   S,
                   subunits,
@@ -200,6 +202,7 @@ transformed parameters {
                                              kcat_phos,
                                              conc_phos_experiment,
                                              drain[e],
+                                             trans_charge,
                                              pmf[e],
                                              S,
                                              subunits,
@@ -336,6 +339,6 @@ generated quantities {
                                              pi_ix_bounds,
                                              subunits);
 
-    reversibility[e] = get_reversibility(dgrs, S, pmf[e], conc[e], edge_type);
+    reversibility[e] = get_reversibility(dgrs, S, pmf[e], conc[e], trans_charge, edge_type);
   }
 }

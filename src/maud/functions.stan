@@ -152,7 +152,7 @@ functions {
     return inv(denom);
   }
 
-  vector get_reversibility(vector dgr, matrix S, real pmf, vector conc, int[] edge_type){
+  vector get_reversibility(vector dgr, matrix S, real pmf, vector conc, vector trans_charge, int[] edge_type){
     real RT = 0.008314 * 310.15;
     // TODO: Z depends on ΔpH (ic-ex), assuming 1
     real Z = 2.30225 * RT;
@@ -164,7 +164,7 @@ functions {
     vector[N_edge] out;
     for (f in 1:N_edge){
       if (edge_type[f] == 1)
-        out[f] = 1 - exp((dgr[f] + RT * reaction_quotient[f])/RT);
+        out[f] = 1 - exp((dgr[f] + RT * reaction_quotient[f])/RT + trans_charge[f] * (Z + pmf_F));
       else if (edge_type[f] == 4)
         // ΔGt associated to a negatively charged molecule (1 charge).
         out[f] = 1 - exp((RT * (reaction_quotient[f] + log(ace_phpk)) + Z + pmf_F)/RT);
@@ -284,6 +284,7 @@ functions {
                        vector kcat_phos,
                        vector conc_phos,
                        vector drain,
+                       vector trans_charge,
                        real pmf,
                        matrix S,
                        vector subunits,
@@ -311,7 +312,7 @@ functions {
                        int[,] pi_ix_bounds){
     int N_edge = cols(S);
     vector[N_edge] vmax = get_vmax_by_edge(enzyme, kcat, edge_to_enzyme, edge_type);
-    vector[N_edge] reversibility = get_reversibility(dgr, S, pmf, conc, edge_type);
+    vector[N_edge] reversibility = get_reversibility(dgr, S, pmf, conc, trans_charge, edge_type);
     vector[N_edge] free_enzyme_ratio = get_free_enzyme_ratio(conc,
                                                              S,
                                                              km,
@@ -377,6 +378,7 @@ functions {
                       vector kcat_phos,
                       vector conc_phos,
                       vector drain,
+                      vector trans_charge,
                       real pmf,
                       matrix S,
                       vector subunits,
@@ -417,6 +419,7 @@ functions {
                                               kcat_phos,
                                               conc_phos,
                                               drain,
+                                              trans_charge,
                                               pmf,
                                               S,
                                               subunits,
