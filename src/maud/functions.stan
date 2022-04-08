@@ -100,7 +100,7 @@ functions {
     int N_edge = size(sub_by_edge_bounds);
     vector[N_edge] prod_conc_over_km;
     for (f in 1:N_edge){
-      if (edge_type[f] == 2){
+      if (edge_type[f] == 2 || edge_type[f] == 4){
         prod_conc_over_km[f] = 1;
         continue;
       }
@@ -129,7 +129,7 @@ functions {
     int N_edge = cols(S);
     vector[N_edge] denom;
     for (f in 1:N_edge){
-      if (edge_type[f] == 2){
+      if (edge_type[f] == 2 || edge_type[f] == 4){
         denom[f] = 1;
         continue;
       }
@@ -157,9 +157,14 @@ functions {
     int N_edge = cols(S);
     vector[N_edge] reaction_quotient = S' * log(conc);
     vector[N_edge] out;
+    // TODO: 1 + 0.1 = 1 + 10**(pKa (acetate) - extracellular pH (5)) (i/e)
+    real ace_phpk = 0.6712690015;
     for (f in 1:N_edge){
       if (edge_type[f] == 1)
         out[f] = 1 - exp((dgr[f] + RT * reaction_quotient[f])/RT);
+      else if (edge_type[f] == 4)
+        // ΔGt associated to a negatively charged molecule (1 charge).
+        out[f] = 1 - exp((dgr[f] + RT * (reaction_quotient[f] + log(ace_phpk)))/RT);
       else
         out[f] = 1;
     }
@@ -255,7 +260,10 @@ functions {
     int N_edge = size(edge_to_enzyme);
     vector[N_edge] out = rep_vector(1, N_edge);
     for (f in 1:N_edge){
-      if (edge_type[f] != 2){
+      if (edge_type[f] == 4){
+        out[f] = kcat[edge_to_enzyme[f]];
+      }
+      else if (edge_type[f] != 2){
         out[f] = enzyme[edge_to_enzyme[f]] * kcat[edge_to_enzyme[f]];
       }
     }
