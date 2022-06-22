@@ -158,7 +158,7 @@ functions {
     vector[N_edge] reaction_quotient = S' * log(conc);
     vector[N_edge] out;
     // TODO: 1 + 0.1 = 1 + 10**(pKa (acetate) - extracellular pH (5)) (i/e)
-    real ace_phpk = 0.6712690015;
+    real ace_phpk = 0.8614406;
     for (f in 1:N_edge){
       if (edge_type[f] == 1)
         out[f] = 1 - exp((dgr[f] + RT * reaction_quotient[f])/RT);
