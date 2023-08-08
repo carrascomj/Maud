@@ -146,7 +146,7 @@ transformed parameters {
   array[N_experiment_train] vector[N_reaction] flux_train;
   array[N_experiment_train] vector[N_edge] dgr_train;
   // neural nerwork
-  vector[N_mic] output_layer;
+  array[N_experiment_train] vector[N_mic] output_layer;
 
   for (e in 1:N_experiment_train){
     dgr_train[e] = get_dgr(S, dgf, temperature_train[e], mic_to_met, water_stoichiometry, transported_charge, psi_train[e]);
@@ -217,7 +217,7 @@ transformed parameters {
     conc_train[e, balanced_mic_ix] = conc_balanced_experiment[1];
     conc_train[e, unbalanced_mic_ix] = conc_unbalanced_train[e];
     // gather the output of the FNN (quenched concentrations)
-    output_layer = nn_predict(conc_train[e],
+    output_layer[e] = nn_predict(conc_train[e],
                             data_to_hidden_weights,
                             hidden_to_hidden_weights,
                             hidden_to_data_weights,
@@ -326,7 +326,7 @@ model {
   sigma ~ std_normal();
   if (likelihood == 1){
     for (c in 1:N_conc_measurement_train)
-      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] + output_layer[mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
+      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] + output_layer[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
     for (e in 1:N_enzyme_measurement_train)
       yenz_train[e] ~ lognormal(log(conc_enzyme_train[experiment_yenz_train[e], enzyme_yenz_train[e]]), sigma_yenz_train[e]);
     for (f in 1:N_flux_measurement_train)
