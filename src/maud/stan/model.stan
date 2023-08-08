@@ -123,7 +123,7 @@ parameters {
   // neural network part; C_s (N_mic) -> (N_mic)
   matrix[N_hidden, N_mic] data_to_hidden_weights; // Data -> Hidden 1
   matrix[N_hidden, N_hidden] hidden_to_hidden_weights[H - 1]; // Hidden[t] -> Hidden[t+1]
-  matrix[N_mic, N_hidden] hidden_to_data_weights;
+  matrix[N_edge, N_hidden] hidden_to_data_weights;
   row_vector[N_hidden] hidden_bias[H]; // Hidden layer biases
   real y_bias; // Bias. 
   real<lower=0> sigma;
@@ -146,7 +146,8 @@ transformed parameters {
   array[N_experiment_train] vector[N_reaction] flux_train;
   array[N_experiment_train] vector[N_edge] dgr_train;
   // neural nerwork
-  matrix[N_experiment_train, N_mic] output_layer;
+  matrix[N_experiment_train, N_edge] output_layer;
+  matrix[N_experiment_train, N_mic] quench_correction;
 
   for (e in 1:N_experiment_train){
     dgr_train[e] = get_dgr(S, dgf, temperature_train[e], mic_to_met, water_stoichiometry, transported_charge, psi_train[e]);
@@ -223,6 +224,7 @@ transformed parameters {
                             hidden_to_data_weights,
                             hidden_bias,
                             y_bias)';
+    quench_correction[e] = (S * (output_layer[e]' .* (1 - exp(dgr_train[e]))))';
     {
     vector[N_edge] edge_flux = get_edge_flux(conc_train[e],
                                              conc_enzyme_experiment,
@@ -326,7 +328,7 @@ model {
   sigma ~ std_normal();
   if (likelihood == 1){
     for (c in 1:N_conc_measurement_train)
-      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] + output_layer[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
+      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] + quench_correction[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
     for (e in 1:N_enzyme_measurement_train)
       yenz_train[e] ~ lognormal(log(conc_enzyme_train[experiment_yenz_train[e], enzyme_yenz_train[e]]), sigma_yenz_train[e]);
     for (f in 1:N_flux_measurement_train)
