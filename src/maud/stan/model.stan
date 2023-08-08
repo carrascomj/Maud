@@ -146,7 +146,7 @@ transformed parameters {
   array[N_experiment_train] vector[N_reaction] flux_train;
   array[N_experiment_train] vector[N_edge] dgr_train;
   // neural nerwork
-  array[N_experiment_train] vector[N_mic] output_layer;
+  matrix[N_experiment_train, N_mic] output_layer;
 
   for (e in 1:N_experiment_train){
     dgr_train[e] = get_dgr(S, dgf, temperature_train[e], mic_to_met, water_stoichiometry, transported_charge, psi_train[e]);
@@ -222,7 +222,7 @@ transformed parameters {
                             hidden_to_hidden_weights,
                             hidden_to_data_weights,
                             hidden_bias,
-                            y_bias);
+                            y_bias)';
     {
     vector[N_edge] edge_flux = get_edge_flux(conc_train[e],
                                              conc_enzyme_experiment,
