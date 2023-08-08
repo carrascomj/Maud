@@ -99,6 +99,9 @@ data {
   real drain_small_conc_corrector;
   real<lower=0> timepoint;
   int<lower=0,upper=1> reject_non_steady;
+  // neural network
+  int N_hidden;  // number of nodes per hidden layer
+  int H; // Number of hidden layers
 }
 transformed data {
   real initial_time = 0;
@@ -117,6 +120,13 @@ parameters {
   array[N_experiment_train] vector[N_enzyme] log_conc_enzyme_train_z;
   array[N_experiment_train] vector[N_pme] log_conc_pme_train_z;
   array[N_experiment_train] vector[N_unbalanced] log_conc_unbalanced_train_z;
+  // neural network part; S (N_mic x N_edge) -> (N_mic x N_mic)
+  matrix[N_edge, N_hidden] data_to_hidden_weights; // Data -> Hidden 1
+  matrix[N_hidden, N_hidden] hidden_to_hidden_weights[H - 1]; // Hidden[t] -> Hidden[t+1]
+  matrix[N_hidden, N_mic] hidden_to_data_weights;
+  row_vector[N_hidden] hidden_bias[H]; // Hidden layer biases
+  real y_bias; // Bias. 
+  real<lower=0> sigma;
 }
 transformed parameters {
   // rescale
@@ -135,6 +145,15 @@ transformed parameters {
   array[N_experiment_train] vector<lower=0>[N_mic] conc_train;
   array[N_experiment_train] vector[N_reaction] flux_train;
   array[N_experiment_train] vector[N_edge] dgr_train;
+  // neural nerwork
+  matrix[N_mic, N_mic] output_layer;
+
+  output_layer = nn_predict(S,
+                            data_to_hidden_weights,
+                            hidden_to_hidden_weights,
+                            hidden_to_data_weights,
+                            hidden_bias,
+                            y_bias);
   for (e in 1:N_experiment_train){
     dgr_train[e] = get_dgr(S, dgf, temperature_train[e], mic_to_met, water_stoichiometry, transported_charge, psi_train[e]);
     flux_train[e] = rep_vector(0, N_reaction);
@@ -293,9 +312,20 @@ model {
     drain_train_z[ex] ~ std_normal();
     psi_train_z[ex] ~ std_normal();
   }
+  // here is when the non-linear transform is done
+  to_vector(data_to_hidden_weights) ~ std_normal();
+  for(h in 1:(H-1)) {
+    to_vector(hidden_to_hidden_weights[h]) ~ std_normal();
+  }
+  to_vector(hidden_to_data_weights) ~ std_normal();
+  for(h in 1:H) {
+    to_vector(hidden_bias[h]) ~ std_normal();
+  }
+  y_bias ~ std_normal();
+  sigma ~ std_normal();
   if (likelihood == 1){
     for (c in 1:N_conc_measurement_train)
-      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
+      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] * output_layer[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
     for (e in 1:N_enzyme_measurement_train)
       yenz_train[e] ~ lognormal(log(conc_enzyme_train[experiment_yenz_train[e], enzyme_yenz_train[e]]), sigma_yenz_train[e]);
     for (f in 1:N_flux_measurement_train)

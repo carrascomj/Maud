@@ -444,4 +444,24 @@ functions {
                                               phosphorylation_pme);
     return (S * edge_flux)[balanced_ix];
   }
+  
+  /* Feed-forward neural network. */
+  matrix nn_predict(matrix x, matrix d_t_h, matrix[] h_t_h, matrix h_t_d, row_vector[] hidden_bias, real y_bias) {
+    int N = rows(x);
+    int n_H = cols(d_t_h);
+    int H = size(hidden_bias);
+    matrix[N, n_H] hidden_layers[H];
+    matrix[N, N] output_layer;
+    vector[N] ones = rep_vector(1., N);
+
+    hidden_layers[1] = inv_logit(x * d_t_h + ones * hidden_bias[1]);
+    for(h in 2:H) {
+      hidden_layers[h] = inv_logit(hidden_layers[h-1] * h_t_h[h - 1] + ones * hidden_bias[h]);
+    }
+    output_layer = hidden_layers[H] * h_t_d + y_bias;
+    return(exp(output_layer));
+  }		
+
 }
+
+
