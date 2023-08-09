@@ -124,7 +124,8 @@ parameters {
   matrix[N_hidden, N_mic] data_to_hidden_weights; // Data -> Hidden 1
   matrix[N_hidden, N_hidden] hidden_to_hidden_weights[H - 1]; // Hidden[t] -> Hidden[t+1]
   matrix[N_edge, N_hidden] hidden_to_data_weights;
-  matrix[N_edge, N_hidden] shared;
+  matrix[N_hidden, N_edge] Q;
+  matrix[N_hidden, N_mic] K;
   row_vector[N_hidden] hidden_bias[H]; // Hidden layer biases
   real y_bias; // Bias. 
   real<lower=0> sigma;
@@ -220,11 +221,12 @@ transformed parameters {
     conc_train[e, unbalanced_mic_ix] = conc_unbalanced_train[e];
     // gather the output of the FNN (quenched concentrations)
     output_layer[e] = nn_predict(conc_train[e],
-                            (1 - exp(dgr_train[e])),
+                            dgr_train[e],
                             data_to_hidden_weights,
                             hidden_to_hidden_weights,
                             hidden_to_data_weights,
-                            shared,
+                            Q,
+                            K,
                             hidden_bias,
                             y_bias)';
     quench_correction[e] = (S * output_layer[e]')';
