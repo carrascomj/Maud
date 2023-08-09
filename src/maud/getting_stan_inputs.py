@@ -469,8 +469,7 @@ def get_config_input(config: MaudConfig):
         "abs_tol": config.ode_config.abs_tol,
         "timepoint": config.ode_config.timepoint,
         "max_num_steps": config.ode_config.max_num_steps,
-        "N_hidden": 3,
-        "H": 10,
+        "H": config.hidden_layers_quenching,
     }
 
 

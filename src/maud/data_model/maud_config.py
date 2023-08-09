@@ -35,6 +35,7 @@ class MaudConfig:
     :param steady_state_threshold_rel: relative threshold for Sv=0 be at steady state
     :param default_initial_concentration: in molecule_unit per volume_unit
     :param drain_small_conc_corrector: number for correcting small conc drains
+    :param hidden_layers_quenching: number of layers of the quenching correction NN
     :param molecule_unit: A unit for counting molecules, like 'mol' or 'mmol'
     :param volume_unit: A unit for measuring volume, like 'L'
     :param energy_unit: A unit for measuring energy, like 'J' or 'kJ'
@@ -58,6 +59,7 @@ class MaudConfig:
     steady_state_threshold_rel: float = 1e-3
     default_initial_concentration: float = 0.01
     drain_small_conc_corrector: float = 1e-6
+    hidden_layers_quenching: int = 10
     molecule_unit: str = "mmol"
     volume_unit: str = "L"
     energy_unit: str = "kJ"
