@@ -123,9 +123,9 @@ parameters {
   // neural network part; C_s (N_mic) -> (N_mic)
   matrix[N_hidden, N_mic] data_to_hidden_weights; // Data -> Hidden 1
   matrix[N_hidden, N_hidden] hidden_to_hidden_weights[H - 1]; // Hidden[t] -> Hidden[t+1]
-  matrix<lower=0>[N_edge, N_hidden] hidden_to_data_weights;
+  matrix[N_edge, N_hidden] hidden_to_data_weights;
   row_vector[N_hidden] hidden_bias[H]; // Hidden layer biases
-  real<lower=0> y_bias; // Bias. 
+  real y_bias; // Bias. 
   real<lower=0> sigma;
 }
 transformed parameters {
@@ -224,7 +224,8 @@ transformed parameters {
                             hidden_to_data_weights,
                             hidden_bias,
                             y_bias)';
-    quench_correction[e] = (S * (output_layer[e]' .* (1 - exp(dgr_train[e]))))';
+    // quench_correction[e] = (S * (output_layer[e]' .* (1 - exp(dgr_train[e]))))';
+    quench_correction[e] = (S * output_layer[e]')';
     {
     vector[N_edge] edge_flux = get_edge_flux(conc_train[e],
                                              conc_enzyme_experiment,
@@ -320,11 +321,11 @@ model {
   for(h in 1:(H-1)) {
     to_vector(hidden_to_hidden_weights[h]) ~ std_normal();
   }
-  to_vector(hidden_to_data_weights) ~ lognormal(1.0, 2.0);
+  to_vector(hidden_to_data_weights) ~ std_normal();
   for(h in 1:H) {
     to_vector(hidden_bias[h]) ~ std_normal();
   }
-  y_bias ~ lognormal(1.0, 2.0);
+  y_bias ~ std_normal();
   sigma ~ std_normal();
   if (likelihood == 1){
     for (c in 1:N_conc_measurement_train)
