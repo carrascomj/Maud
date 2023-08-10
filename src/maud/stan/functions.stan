@@ -446,15 +446,14 @@ functions {
   }
   
   /* Feed-forward neural network. */
-  vector nn_predict(vector x, vector direction, matrix d_t_h, matrix[] h_t_h, matrix h_t_d,  matrix Q, matrix K, row_vector[] hidden_bias, real y_bias) {
+  vector nn_predict(vector x, matrix d_t_h, matrix[] h_t_h, matrix h_t_d,  row_vector[] hidden_bias, real y_bias) {
     int O = rows(h_t_d);
     int n_H = rows(d_t_h);
     int H = size(hidden_bias);
     vector[n_H] hidden_layers[H];
     vector[O] output_layer;
 
-    // TODO(carrascom): scale parameter multiplying softmax
-    hidden_layers[1] = softmax((Q * direction) .* (K * x)) + inv_logit(d_t_h * x + hidden_bias[1]');
+    hidden_layers[1] = inv_logit(d_t_h * x + hidden_bias[1]');
     for(h in 2:H) {
       hidden_layers[h] = inv_logit(h_t_h[h-1] * hidden_layers[h-1] + hidden_bias[h]');
     }
