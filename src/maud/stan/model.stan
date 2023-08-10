@@ -123,11 +123,11 @@ parameters {
   // neural network part; (C_s, dGr) -> (N_edge)
   matrix[N_hidden, N_mic] data_to_hidden_weights; // Data -> Hidden 1
   matrix[N_hidden, N_hidden] hidden_to_hidden_weights[H - 1]; // Hidden[t] -> Hidden[t+1]
-  matrix[N_edge, N_hidden] hidden_to_data_weights;
+  matrix<lower=0>[N_mic, N_hidden] hidden_to_data_weights;
   matrix[N_hidden, N_edge] Q;
   matrix[N_hidden, N_mic] K;
   row_vector[N_hidden] hidden_bias[H]; // Hidden layer biases
-  real y_bias; // Bias. 
+  real<lower=0> y_bias; // Bias. 
   real<lower=0> sigma;
 }
 transformed parameters {
@@ -148,8 +148,8 @@ transformed parameters {
   array[N_experiment_train] vector[N_reaction] flux_train;
   array[N_experiment_train] vector[N_edge] dgr_train;
   // neural nerwork
-  matrix[N_experiment_train, N_edge] output_layer;
-  matrix[N_experiment_train, N_mic] quench_correction;
+  matrix[N_experiment_train, N_mic] output_layer;
+  matrix<lower=0>[N_experiment_train, N_mic] quench_correction;
 
   for (e in 1:N_experiment_train){
     dgr_train[e] = get_dgr(S, dgf, temperature_train[e], mic_to_met, water_stoichiometry, transported_charge, psi_train[e]);
@@ -229,7 +229,7 @@ transformed parameters {
                             K,
                             hidden_bias,
                             y_bias)';
-    quench_correction[e] = (S * output_layer[e]')';
+    quench_correction[e] = output_layer[e];
     {
     vector[N_edge] edge_flux = get_edge_flux(conc_train[e],
                                              conc_enzyme_experiment,
@@ -314,7 +314,8 @@ model {
   dgf ~ multi_normal_cholesky(prior_loc_dgf, prior_cov_dgf_chol);
   log_kcat_pme_z ~ std_normal();
   for (ex in 1:N_experiment_train){
-    log_conc_unbalanced_train_z[ex] ~ std_normal();
+    // log_conc_unbalanced_train_z[ex] + (log(quench_correction[ex, unbalanced_mic_ix])' - priors_conc_unbalanced_train[1, ex]) ./ priors_conc_unbalanced_train[2, ex] ~ std_normal();
+    log_conc_unbalanced_train_z[ex] + (log(quench_correction[ex, unbalanced_mic_ix])' .* priors_conc_unbalanced_train[1, ex]) ./ priors_conc_unbalanced_train[2, ex] ~ std_normal();
     log_conc_enzyme_train_z[ex] ~ std_normal();
     log_conc_pme_train_z[ex] ~ std_normal();
     drain_train_z[ex] ~ std_normal();
@@ -325,15 +326,15 @@ model {
   for(h in 1:(H-1)) {
     to_vector(hidden_to_hidden_weights[h]) ~ std_normal();
   }
-  to_vector(hidden_to_data_weights) ~ std_normal();
+  to_vector(hidden_to_data_weights) ~ lognormal(1.0, 1.0);
   for(h in 1:H) {
     to_vector(hidden_bias[h]) ~ std_normal();
   }
-  y_bias ~ std_normal();
+  y_bias ~ lognormal(1.0, 1.0);
   sigma ~ std_normal();
   if (likelihood == 1){
     for (c in 1:N_conc_measurement_train)
-      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] + quench_correction[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
+      yconc_train[c] ~ lognormal(log(conc_train[experiment_yconc_train[c], mic_ix_yconc_train[c]] .* quench_correction[experiment_yconc_train[c], mic_ix_yconc_train[c]]), sigma_yconc_train[c]);
     for (e in 1:N_enzyme_measurement_train)
       yenz_train[e] ~ lognormal(log(conc_enzyme_train[experiment_yenz_train[e], enzyme_yenz_train[e]]), sigma_yenz_train[e]);
     for (f in 1:N_flux_measurement_train)
