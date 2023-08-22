@@ -1,0 +1,442 @@
+---
+title: "Black stroke kinetics"
+format:
+  html:
+    code-fold: true
+    embed-resources: true
+    toc: true
+# execute:
+#   cache: true
+# jupyter: python
+---
+
+## Introduction
+
+Maud is a bayesian model that solves an ODE based on some priors to arrive to the steady state concentrations, where the likelihood
+is a regression of the experimental measurements and fluxes to the concentrations and fluxes produced by the ODE solution.
+
+Now, assuming that the experimental setup was in steady state in the biorreactors, there are two main sources of deviation
+which could make the data not be in steady state: the quenching and the extraction error. The quenching is the process
+of freezing the metabolism such that the metabolites do no change their concentration from the experimental
+conditons. This requires fast handling, freezing, etc. The extraction error is the error that is introduced
+when the metabolites are extracted from the cells. This is a slow process, and part of the metabolites can
+be lost whilst some of the extracted molecules might be modified in the process (?, no idea about that).
+
+If we suspect that the quenching is failing, we can learn a transformation from the steady state to the observed concentrations.
+We can define this as @eq-fS-quenching,
+
+$$
+\begin{align}
+f: \mathbb{R}^{m, r} &\rightarrow \mathbb{R^+}^{m, m} \\
+C_{quenched} &= C_{steady} \cdot f(S)
+\end{align} 
+$$ {#eq-fS-quenching}
+
+where $C_{quenched}$ is the observed concentrations, $C_{steady}$ is the steady state concentrations and $S$ is the stoichiometric matrix ($m$ metabolites, $r$ reactions).
+$f$ is defined as an arbitrary artificial neural network (black box model), which we can embed in Stan.
+
+The advantage of learning $f$ is that we can learn a _mass conversion matrix_ in $\mathbb{R^+}$ that is interpretable. This is in contrast with learning $g$ (@eq-gC-quenching),
+
+$$
+\begin{align}
+g: \mathbb{R^+}^m &\rightarrow \mathbb{R^+}^{m} \\
+C_{quenched} &= g(C_{steady})
+\end{align} 
+$$ {#eq-gC-quenching}
+
+which would give as the same result but less interpretable.
+
+## Quenching error $f(S)$
+
+(NN weights are normally distributed).
+
+```{python}
+from glob import glob
+
+import arviz as az
+import pandas as pd
+import plotnine as p9
+import maud
+import numpy as np
+from maud.getting_idatas import get_idata
+from maud.loading_maud_inputs import load_maud_input, MaudInput
+from maudtools.plotting import (
+    concat_experiments,
+    plot_maud_variable,
+)
+```
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_fS"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+```
+
+```{python}
+plot_dgf = (
+    plot_maud_variable(idata, getattr(mi.parameters, "dgf"))
+    + p9.coord_flip()
+    + p9.geom_hline(yintercept=0, color="#CCCCCC", linetype="--")
+    + p9.theme_tufte()
+    + p9.theme(
+        text=p9.element_text(size=16, color="#445058"),
+        figure_size=(10, 6),
+        plot_background=p9.element_rect("white"),
+    )
+    + p9.scale_y_continuous(name="ΔGf")
+    + p9.scale_x_discrete(name="metabolites")
+)
+plot_dgf
+```
+
+A huge amount of data wrangling to separate posteriors, priors and observations.
+
+```{python}
+def get_concs(idata: az.InferenceData, mi: MaudInput) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Get the concentrations from the idata and the MaudInput"""
+    posterior_concs = idata.posterior.conc_unbalanced_train.sel(
+        {"draw": idata.posterior.draw.max(), "chain": 0}
+    ).to_pandas()
+    # tidy data frame with the experiment as a column
+    posterior_concs = (
+        posterior_concs.reset_index().reset_index(drop=True).melt(id_vars=["experiments"])
+    )
+    # and a string operation, joining the metabolite and the experiment
+    posterior_concs["metabolite"] = (
+        posterior_concs.unbalanced_mics + "_" + posterior_concs.experiments
+    )
+    posterior_concs = posterior_concs[["metabolite", "value"]].set_index("metabolite").value
+    prior_conc = pd.Series(
+        {
+            f"{km.metabolite}_{km.compartment}_{km.experiment}": km.exploc
+            if km.exploc is not None
+            else np.exp((np.log(km.pct99) + np.log(km.pct1)) / 2)
+            for km in mi.prior_input.conc_unbalanced
+        }
+    )
+    exp_concs = [
+        (exp.id, point.metabolite, point.compartment, point.value)
+        for exp in mi.experiments
+        for point in exp.measurements
+        if point.target_type == maud.data_model.experiment.MeasurementType.MIC
+    ]
+    exp_concs = pd.DataFrame(
+        {
+            "experiment": [x[0] for x in exp_concs],
+            "metabolites": [x[1] + "_" + x[2] for x in exp_concs],
+            "concentration": [x[3] for x in exp_concs],
+        }
+    )
+    initial_concs = [
+        (exp.id, point.metabolite, point.compartment, point.value)
+        for exp in mi.experiments
+        for point in exp.initial_state
+    ]
+    initial_concs = pd.DataFrame(
+        {
+            "experiment": [x[0] for x in initial_concs],
+            "metabolites": [x[1] + "_" + x[2] for x in initial_concs],
+            "concentration": [x[3] for x in initial_concs],
+        }
+    )
+    concs = pd.concat(
+        [pd.DataFrame(posterior_concs.sort_index()), prior_conc.sort_index()], axis=1
+    )
+    concs.columns = ["posterior", "prior"]
+    concs = concs.reset_index()
+    met_conds = concs.iloc[:, 0].str.split("_", n=2, expand=True)
+    concs["metabolites"] = met_conds.iloc[:, 0] + "_" + met_conds.iloc[:, 1]
+    concs["experiment"] = met_conds.iloc[:, 2]
+    concs["concentration"] = concs.prior
+    exp_concs["source"] = "measurement"
+    initial_concs["source"] = "initial value"
+    concs["source"] = "prior"
+    all_concs = pd.concat(
+        [
+            exp_concs,
+            initial_concs,
+            concs[["experiment", "metabolites", "concentration", "source"]],
+        ]
+    )
+    conc_filtered = concat_experiments(
+        idata.posterior["conc_train"].rename({"mics": "metabolites"}), "metabolites"
+    )
+    conc_filtered = conc_filtered.melt(
+        id_vars=["experiment"], var_name="metabolites", value_name="concentration"
+    )
+    return conc_filtered.dropna(axis=0), all_concs
+
+
+def plot_concs(conc_filtered: pd.DataFrame, all_concs: pd.DataFrame):
+    """Plot the concentrations, indicating the source (obs/prior/init)."""
+    return (
+        p9.ggplot(conc_filtered, p9.aes(x="experiment", y="concentration", fill="experiment"))
+        + p9.geom_violin(scale="width", color="#999999")
+        + p9.facet_wrap("~metabolites")
+        + p9.scale_y_continuous(trans="log10")
+        + p9.geom_point(all_concs, p9.aes(x="experiment", y="concentration", shape="source"), size=2, fill="#999999")
+        + p9.theme(
+            text=p9.element_text(size=14, color="#445058"),
+            axis_text_x=p9.element_text(rotation=45),
+            figure_size=(20, 10),
+        )
+       + p9.scale_fill_manual(values=["ivory", "grey", "darkgrey"])
+   )
+```
+
+```{python}
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+Plot the _mass conversion matrix_ posterior.
+
+```{python}
+_ = az.plot_posterior(idata, var_names=["output_layer"], skipna=True)
+```
+
+### Quenching error $e^{f(S)}$
+
+We can compare this with the same model but taking $e^{f(S)}$ in @eq-fS-quenching, such that it is actually to $\mathbb{R^+}$ instead of relying on the warmup to filter out `NaN`s:
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_expfS"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+Not sure if this looks better of worse but the $\hat R$ is much worse. In the
+previous models the weights of the neural networks are defined as standard-normally distributed. Probably we have to try
+without any prior or with _LogNormal_ priors.
+
+### Without neural networks
+
+Finally, let's compare with the model that does not use any quenching correction (any neural network):
+
+```{python}
+OUTPUT_RESULTS = "./results/white_opt"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+## Quenching $g(C_s)$
+
+Instead of the initial $g$ in @eq-gC-quenching, we can make it informative by using addition (@eq-thermo-feasible).
+
+$$
+\begin{align}
+g: \mathbb{R^+}^m &\rightarrow \mathbb{R^+}^{r} \\
+g_{-1} &\sim LogNormal(1, 2) \\
+C_{quenched} &= C_{steady} + S  \left[ g(C_{steady}) * (1 - e^{\Delta G_r}) \right]
+\end{align}
+$$ {#eq-thermo-feasible}
+
+$g_{-1}$ indicates the hidden weights and biases of the last layer. Log normally
+distributing it makes the output positive (the activation functions are $\mathbb{R} \rightarrow \mathbb{R^+}$) such that, when multiplied by $S (1 - e^{\Delta G_r})$, the direction of the changes are thermodynamically correct. $*$ indicates the Hadamart product.
+
+### Just $g(C_s)$
+
+Without forcing any thermodynamic feasibility, with a shared quenching correction over the experiments:
+
+\begin{align}
+g: \mathbb{R^+}^m &\rightarrow \mathbb{R^+}^{m} \\
+g_{-1} &\sim N(0, 1) \\
+C_{quenched} &= C_{steady} + g(C_{steady}) 
+\end{align}
+
+This is equivalent to assuming that the quenching occurs in exactly the same amount per metabolite accross conditions.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+This does not look too great.
+
+Let's change the hypothesis with a non-shared quenching correction over the
+experiments (hidden weights are still shared); i.e., the quenching correction
+is different for each experiment but it is assumed that there is a general
+non-linear relationship between the concentrations in the cells and the
+quenching correction:
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs_unshared"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*2.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+This looks much better in terms of how the observed metabolites present more gaussian and narrow distributions. It has to be noted that the chain 1 failed, which may be anecdotical. Nevertheless, this seems to indicate that $g(C_{steady})$ contains valuable information that $f(S)$ lacks.
+
+### Log Normal $Sg(C_s)*(1-e^{\Delta G_r})$
+
+This is @eq-thermo-feasible, non-shared quenching correction over the experiments.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs_SdG"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+The sampling returned a very low number of effective samples, in this case. This may be because we have to increase the `maxtime` parameter ($10^4$ right now); or because we are using a very badly parametrize example model; or because the LogNormal priors in @eq-thermo-feasible are not properly chosen.
+
+Let's increase the max time.
+
+```{python}
+#| eval: false
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs_SdG_maxtime"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+It failed. We should probably use a better model to test this.
+
+### Normal $Sg(C_s)*(1-e^{\Delta G_r})$
+
+This is @eq-thermo-feasible, non-shared quenching correction over the experiments, with normal priors for the last hidden layer.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs_SdG_normal"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+### Normal $S g(C_s)$
+
+@eq-thermo-feasible but without the thermodynamic feasibility. Since we don't have the sign information, the LogNormal priors for the last hidden layer are turned into normal priors.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCs_S"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+### Normal $S g(C_s, 1 - e^{\Delta G_r})$
+
+In this case, we try to force the right directionality on the latent spaces of the neural network. In order to achieve that, the 
+
+First, we can try the naive implementation of this, where each layer function is:
+
+$$
+g_i(x) = \sigma(W_i x + b_i) * (1 - exp(\Delta G_r))
+$$ {#eq-naive-inner-dGr}
+
+where $W_i$ is the weight matrix of the $i$-th layer, $b_i$ is the bias vector of the $i$-th layer, $\sigma$ is the activation function, and $\Delta G_r$ is the vector of reaction free energies.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCsdG_S"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+This did not return a good sampling (although a super fast one).
+
+The problem with @eq-naive-inner-dGr is that the hidden dimension of each layer must be the number of reactions. A way to solved this is to use a learned linear projection of the hidden dimension (of arbitrary size) to the reaction space and apply it each time:
+
+$$
+\begin{align}
+A: R^{h} &\rightarrow R^{r} \\
+g_i(x) &= \sigma(W_i x + b_i) \cdot A * (1 - exp(\Delta G_r)) A^T
+\end{align}
+$$ {#eq-inner-dGr}
+
+Here, $h$ is an arbitraty dimension size.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumgCsdG_S_project"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+This is something.
+
+A different standard way of using the two inputs is to use attention. I have changed the notation
+to be closer to the usual way of expressing this operations in ther deep learning literature.
+
+$$
+\begin{align}
+q &= Q y + b_k \\
+k &= K x + b_k \\
+v &= V x + b_k \\
+f(x, y) &= softmax(q * k^T) + v
+\end{align}
+$$ {#eq-attention}
+
+where $Q \in \mathbb{R}^{d_{dgr}, k}$, $K \in \mathbb{R}^{d_{x}, k}$ and $V \in \mathbb{R}^{d_{x}, k}$. The query input $y$  comes from dGr while $x$ is the input concentrations.
+
+The implementation has been done only for the first layer, whereas the rest are feed forward layers.
+With the attention mechanism, we are no longer imposing any thermodynamic constraint but we are nonetheless
+informing the latent space about the $\Delta G_r$ of each reaction.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumattCsdG_S_project"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+Not super good.
+
+## Quenching everything
+
+So far, we have only included the quenching correction in the likelihood. This means that it only effectively affects the observed measurements.
+
+However, we can include it in the priors too. This is done by sampling the unbalance concentrations (those coming from priors, inputs to the ODE)
+acounting for the quenching correction.
+
+$$
+\begin{align}
+log(C_{unbalanced}) - log(C_{correction} &* \bar C_{unbalanced} / \sigma_{unbalanced}) \sim N(0, 1) \\
+g: \mathbb{R^+}^m, \mathbb{R}^r &\rightarrow \mathbb{R^+}^m \\
+g_{-1} &\sim LogNormal(1, 2) \\
+C_{quenched} &= C_{steady} * g(C_{steady}, \Delta G_r) 
+\end{align}
+$$ {#eq-attention}
+
+This was done as a first approximation with the attention mechanism.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_sumattCsdG_S_project_unb"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+The output can be compared with the attention just above, and it gets much better results with a sampling that is closer to $\hat R \le 1.05$. The last thing to try would be to compare this with the best performer of the quenching balanced experiments (just $g(C_s)$), which is running right now.
+
+```{python}
+OUTPUT_RESULTS = "./results/pyrDH_multCs_unb"
+mi = load_maud_input(f"{OUTPUT_RESULTS}/user_input")
+idata = get_idata(glob(f"{OUTPUT_RESULTS}/samples/*.csv"), mi, "train")
+conc_filtered, all_concs = get_concs(idata, mi)
+plot_concs(conc_filtered, all_concs)
+```
+
+## Future work
+
+We have to evaluate the different approaches by using a know ground truth with a generated quenching process. Each approach has been put into a commit, therefore we can evaluate them easily once the toy model is ready.
+
+Also, we could separate the extraction error from the quenching error by introducing another
+random variable (a vector of length $m$ or a float in $\mathbb{R^+}$) that multiplies $C_{quenched}$.
