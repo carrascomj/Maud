@@ -469,6 +469,8 @@ def get_config_input(config: MaudConfig):
         "abs_tol": config.ode_config.abs_tol,
         "timepoint": config.ode_config.timepoint,
         "max_num_steps": config.ode_config.max_num_steps,
+        "quench_timepoints": config.quench_timepoints,
+        "N_quench_timepoints": len(config.quench_timepoints),
     }
 
 
