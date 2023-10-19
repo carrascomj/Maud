@@ -1,4 +1,3 @@
-"""Code for sampling from a posterior distribution."""
 
 import os
 
@@ -14,7 +13,7 @@ from maud.data_model.maud_input import MaudInput
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PRIOR_LOC_DRAIN = None
 DEFAULT_PRIOR_SCALE_DRAIN = None
-STAN_PROGRAM_RELATIVE_PATH = os.path.join("stan", "model.stan")
+STAN_PROGRAM_RELATIVE_PATH = os.path.join("stan", "poor_quenched_model.stan")
 STAN_PROGRAM_RELATIVE_PATH_PREDICT = os.path.join(
     "stan", "out_of_sample_model.stan"
 )

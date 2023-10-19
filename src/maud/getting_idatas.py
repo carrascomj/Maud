@@ -67,10 +67,12 @@ def get_idata(csvs: List[str], mi: MaudInput, mode: str) -> az.InferenceData:
         "yconcs": yconc_coords,
         "yfluxs": yflux_coords,
         "yenz": yenz_coords,
+        "quenched_timepoints": mi.config.quench_timepoints,
     }
     dims = {
         f"flux_{mode}": ["experiments", "reactions"],
         f"conc_{mode}": ["experiments", "mics"],
+        "conc_quench": ["quenched_timepoints", "experiments", "mics"],
         f"log_conc_enzyme_{mode}_z": ["experiments", "enzymes"],
         f"conc_enzyme_{mode}": ["experiments", "enzymes"],
         f"conc_unbalanced_{mode}": ["experiments", "unbalanced_mics"],
