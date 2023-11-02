@@ -1,14 +1,28 @@
 name = "test-ode"
 kinetic_model_file = "kinetic_model.toml"
 priors_file = "priors.toml"
+inits=0
 experiments_file = "experiments.toml"
 likelihood = true
 
 [cmdstanpy_config]
-iter_warmup = 0
-iter_sampling = 1
-chains = 1
+iter_warmup = 200
+iter_sampling = 100
+chains = 4
+refresh = 1
+adapt_init_phase = 20
+metric = "dense_e"
+adapt_metric_window = 5
 
-[ode_config]
-max_num_steps = 1e9
-timepoint = 1e3
+[ode_solver_config]
+rel_tol = 1e-12
+abs_tol = 1e-16
+max_num_steps = 1e6
+
+[algebra_solver_config]
+rel_tol = 1e-3
+abs_tol = 1e-8
+
+[laplace_options]
+draws=400
+
