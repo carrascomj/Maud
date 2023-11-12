@@ -468,8 +468,6 @@ def do_quench(data_path: str, output_dir: str, n: int):
     print(f"Copying user input from {data_path} to {ui_dir}")
     shutil.copytree(data_path, ui_dir)
     stanfit = quench(mi, samples_path, n)
-    print(stanfit.diagnose())
-    print(stanfit.summary())
     idata = get_idata(stanfit.runset.csv_files, mi, "train")
     idata.to_json(os.path.join(output_path, "idata.json"))
     return output_path
