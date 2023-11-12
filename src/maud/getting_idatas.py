@@ -63,7 +63,6 @@ def get_idata(csvs: List[str], mi: MaudInput, mode: str) -> az.InferenceData:
         else [],
         "kms": mi.parameters.km.ids[0],
         "kis": mi.parameters.ki.ids[0],
-        "dissociation_constants": (mi.parameters.dissociation_constant.ids[0]),
         "yconcs": yconc_coords,
         "yfluxs": yflux_coords,
         "yenz": yenz_coords,
