@@ -3,7 +3,6 @@ kinetic_model_file = "kinetic_model.toml"
 priors_file = "priors.toml"
 experiments_file = "experiments.toml"
 likelihood = true
-quench_timepoints = [0.1, 1.0, 10.0]
 
 [cmdstanpy_config]
 iter_warmup = 200
@@ -13,3 +12,6 @@ refresh = 1
 adapt_init_phase = 20
 metric = "dense_e"
 adapt_metric_window = 5
+
+[quench_config]
+quench_timepoints = [1e-8, 1e-6, 1e-4, 1e-2, 1e0, 1e1]
