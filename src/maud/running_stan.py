@@ -128,6 +128,29 @@ def simulate(mi: MaudInput, output_dir: str, n: int) -> CmdStanMCMC:
     )
 
 
+def quench(mi: MaudInput, output_dir: str, n: int) -> CmdStanMCMC:
+    """Generate simulations from the prior mean.
+
+    :param mi: a MaudInput object
+    :param output_dir: a string specifying where to save the output.
+    """
+    model = cmdstanpy.CmdStanModel(
+        stan_file=os.path.join(HERE, STAN_PROGRAM_RELATIVE_PATH_QUENCH),
+        cpp_options=mi.config.cpp_options,
+        stanc_options=mi.config.stanc_options,
+    )
+    import pdb; pdb.set_trace()
+    model.format(overwrite_file=True, canonicalize=True)
+    set_up_output_dir(output_dir, mi)
+    return model.sample(
+        output_dir=output_dir,
+        iter_sampling=n,
+        data=os.path.join(output_dir, "input_data_train.json"),
+        inits=os.path.join(output_dir, "inits.json"),
+        **SIM_CONFIG,
+    )
+
+
 def optimize(mi: MaudInput, output_dir: str) -> CmdStanMLE:
     """Generate MLE from the input maud model.
 

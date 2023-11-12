@@ -67,7 +67,7 @@ def get_idata(csvs: List[str], mi: MaudInput, mode: str) -> az.InferenceData:
         "yconcs": yconc_coords,
         "yfluxs": yflux_coords,
         "yenz": yenz_coords,
-        "quenched_timepoints": mi.config.quench_timepoints,
+        "quenched_timepoints": mi.config.quench_config.quench_timepoints,
     }
     dims = {
         f"flux_{mode}": ["experiments", "reactions"],
@@ -101,19 +101,6 @@ def get_idata(csvs: List[str], mi: MaudInput, mode: str) -> az.InferenceData:
         f"llik_conc_{mode}": ["yconcs"],
         f"llik_flux_{mode}": ["yfluxs"],
     }
-    # for zvar in [
-    #     "kcat",
-    #     "km",
-    #     "kcat_pme",
-    #     "ki",
-    #     "dissociation_constant",
-    #     "transfer_constant",
-    #     "psi_train",
-    #     f"drain_{mode}",
-    #     f"conc_unbalanced_{mode}",
-    #     f"conc_pme_{mode}"
-    # ]:
-    #     dims[f"log_{zvar}_z"] = dims[zvar]
     return az.from_cmdstan(
         posterior=csvs,
         coords=coords,

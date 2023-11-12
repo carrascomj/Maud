@@ -13,6 +13,12 @@ class ODEConfig:
     max_num_steps: int = int(1e9)
     timepoint: float = 500
 
+@dataclass
+class QUENCHConfig:
+    """Config that speicifies the Quenching settings"""
+    quench_timepoints: List[float] = Field(default_factory=list)
+    
+
 
 @dataclass
 class MaudConfig:
@@ -53,12 +59,12 @@ class MaudConfig:
     optimize_options: Optional[dict] = None
     user_inits_file: Optional[str] = None
     ode_config: ODEConfig = Field(default_factory=ODEConfig)
+    quench_config: QUENCHConfig = Field(default_factory=QUENCHConfig)
     reject_non_steady: bool = True
     steady_state_threshold_abs: float = 1e-8
     steady_state_threshold_rel: float = 1e-3
     default_initial_concentration: float = 0.01
     drain_small_conc_corrector: float = 1e-6
-    quench_timepoints: List[float] = Field(default_factory=list)
     molecule_unit: str = "mmol"
     volume_unit: str = "L"
     energy_unit: str = "kJ"

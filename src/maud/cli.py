@@ -27,7 +27,7 @@ import importlib_resources
 from maud.data.example_inputs import linear
 from maud.getting_idatas import get_idata
 from maud.loading_maud_inputs import load_maud_input
-from maud.running_stan import optimize, predict, sample, simulate, variational
+from maud.running_stan import optimize, predict, sample, simulate, variational, quench
 
 
 EXAMPLE_INPUT_PATH = importlib_resources.files(linear)._paths[0]
@@ -418,3 +418,60 @@ def do_variational(data_path, output_dir):
     shutil.copytree(data_path, ui_dir)
     variational(mi, samples_path)
     return output_path
+
+
+@cli.command("quench")
+@click.option("--output_dir", default=".", help="Where to save Maud's output")
+@click.option("-n", default=1, type=int, help="Number of simulations")
+@click.argument(
+    "data_path",
+    type=click.Path(exists=True, dir_okay=True, file_okay=False),
+)
+def quench_command(data_path, output_dir, n):
+    """Generate MCMC samples given a Maud output folder at train_path.
+
+    This function creates a new directory in output_dir with a name starting
+    with "maud-quench-output". It first copies the testing directory at
+    train_path into the new this directory at new_dir/user_input, then runs the
+    running_stan.quench_out_of_sample function to write samples in
+    new_dir/oos_samples.
+
+    The trained output is stored in the new_dir/trained_samples folder along
+    with the user input required to generate the trained samples.
+
+    """
+    click.echo(do_quench(data_path, output_dir, n))
+
+
+def do_quench(data_path: str, output_dir: str, n: int):
+    """Generate MCMC samples given a Maud output folder at train_path.
+
+    This function creates a new directory in output_dir with a name starting
+    with "maud-quench-output". It first copies the testing directory at
+    train_path into the new this directory at new_dir/user_input, then runs the
+    running_stan.quench_out_of_sample function to write samples in
+    new_dir/oos_samples.
+
+    The trained output is stored in the new_dir/trained_samples folder along
+    with the user input required to generate the trained samples.
+
+    """
+    mi = load_maud_input(data_path)
+    now = datetime.now().strftime("%Y%m%d%H%M%S")
+    output_name = f"maud_output_quench-{mi.config.name}-{now}"
+    output_path = os.path.join(output_dir, output_name)
+    samples_path = os.path.join(output_path, "samples")
+    ui_dir = os.path.join(output_path, "user_input")
+    print("Creating output directory: " + output_path)
+    os.mkdir(output_path)
+    os.mkdir(samples_path)
+    print(f"Copying user input from {data_path} to {ui_dir}")
+    shutil.copytree(data_path, ui_dir)
+    stanfit = quench(mi, samples_path, n)
+    print(stanfit.diagnose())
+    print(stanfit.summary())
+    idata = get_idata(stanfit.runset.csv_files, mi, "train")
+    idata.to_json(os.path.join(output_path, "idata.json"))
+    return output_path
+
+
