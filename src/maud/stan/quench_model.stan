@@ -161,10 +161,14 @@ generated quantities {
                                                                     log_conc_enzyme_train_z);
   array[N_experiment_train] vector[N_unbalanced] conc_unbalanced_train = unz_log_2d(priors_conc_unbalanced_train,
                                                                     log_conc_unbalanced_train_z);
-  array[N_experiment_train] vector[N_unbalanced] conc_unbalanced_quench = rep_array(rep_vector(
-                                                                    1e-5,
-                                                                    N_unbalanced),
-                                                                    N_experiment_train);
+  array[N_experiment_train] vector[N_unbalanced] conc_unbalanced_quench = conc_unbalanced_train;
+
+// We set the third metabolic "Z" to 1e-5 in all conditions to simulate 
+// a sampling scenario where the culture is deprived of metabolite Z.
+// This is analogous to a sample being deprived of O2.
+  for (e in 1 : N_experiment_train) {
+    conc_unbalanced_quench[e][3] = 1e-5; 
+        }
   array[N_experiment_train] vector[N_pme] conc_pme_train = unz_log_2d(priors_conc_pme_train,
                                                                     log_conc_pme_train_z);
   // define values for final states 
