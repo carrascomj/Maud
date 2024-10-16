@@ -2,7 +2,7 @@ name = "test-ode"
 kinetic_model_file = "kinetic_model.toml"
 priors_file = "priors.toml"
 experiments_file = "experiments.toml"
-likelihood = true
+likelihood = false
 
 [cmdstanpy_config]
 iter_warmup = 200
