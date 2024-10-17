@@ -6,6 +6,9 @@ user_inits_file = "inits.toml"
 likelihood = true
 reject_non_steady = true
 
+[quench_config]
+quench_timepoints = [1e-4, 1e-2, 1e-1]
+
 [cmdstanpy_config]
 iter_warmup = 1000
 iter_sampling = 1000

@@ -161,13 +161,13 @@ generated quantities {
                                                                     log_conc_enzyme_train_z);
   array[N_experiment_train] vector[N_unbalanced] conc_unbalanced_train = unz_log_2d(priors_conc_unbalanced_train,
                                                                     log_conc_unbalanced_train_z);
-  array[N_experiment_train] vector[N_unbalanced] conc_unbalanced_quench = conc_unbalanced_train;
+  array[N_experiment_train] vector[N_drain] drain_quench;
 
-// We set the third metabolic "Z" to 1e-5 in all conditions to simulate 
-// a sampling scenario where the culture is deprived of metabolite Z.
+// We set the drain to 1e-8 in all conditions to simulate 
+// a sampling scenario where the culture is deprived of a methionine input.
 // This is analogous to a sample being deprived of O2.
   for (e in 1 : N_experiment_train) {
-    conc_unbalanced_quench[e][3] = 1e-5; 
+    drain_quench[e] = rep_vector(1e-8, N_drain); 
         }
   array[N_experiment_train] vector[N_pme] conc_pme_train = unz_log_2d(priors_conc_pme_train,
                                                                     log_conc_pme_train_z);
@@ -271,7 +271,7 @@ generated quantities {
                                            conc_balanced_experiment[1],
                                            initial_time, quench_timepoints,
                                            rel_tol, abs_tol, max_num_steps,
-                                           conc_unbalanced_quench[e],
+                                           conc_unbalanced_train[e],
                                            balanced_mic_ix,
                                            unbalanced_mic_ix,
                                            conc_enzyme_experiment,
@@ -279,7 +279,7 @@ generated quantities {
                                            transfer_constant,
                                            dissociation_constant, kcat_pme,
                                            conc_pme_experiment,
-                                           drain_train[e],
+                                           drain_quench[e],
                                            temperature_train[e],
                                            drain_small_conc_corrector, S,
                                            subunits, edge_type,
@@ -302,7 +302,7 @@ generated quantities {
                                            phosphorylation_pme);
     for (t in 1 : N_quench_timepoints) {
       conc_quench[t, e, balanced_mic_ix] = conc_quenched_experiment[t];
-      conc_quench[t, e, unbalanced_mic_ix] = conc_unbalanced_quench[e];
+      conc_quench[t, e, unbalanced_mic_ix] = conc_unbalanced_train[e];
     }
   }
 }

@@ -71,7 +71,7 @@ class Km(MaudParameter):
         ]
         self.non_negative = True
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.mic_ids = [
@@ -117,7 +117,7 @@ class Kcat(MaudParameter):
         self.init_input = init_input
         self.non_negative = True
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.prior = get_ind_prior_1d(
@@ -158,7 +158,7 @@ class Ki(MaudParameter):
         ]
         self.non_negative = True
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.mic_ids = [
@@ -199,8 +199,8 @@ class Dgf(MaudParameter):
         self.shape_names = ["N_metabolite"]
         self.id_components = [[IdComponent.METABOLITE]]
         self.non_negative = False
-        self.default_loc = 0
-        self.default_scale = 10
+        self.default_loc = 0.0
+        self.default_scale = 10.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.prior = get_mvn_prior(
@@ -246,7 +246,7 @@ class DissociationConstant(MaudParameter):
         ]
         self.enzyme_ids = self.split_ids[0][0]
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.prior = get_ind_prior_1d(
@@ -280,7 +280,7 @@ class TransferConstant(MaudParameter):
         self.init_input = init_input
         self.non_negative = True
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.prior = get_ind_prior_1d(
@@ -314,7 +314,7 @@ class KcatPme(MaudParameter):
         self.id_components = [[IdComponent.PHOSPHORYLATION_MODIFYING_ENZYME]]
         self.non_negative = True
         self.default_loc = -0.69  # roughly 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior_in_test_model = False
         self.prior_in_train_model = True
         self.prior = get_ind_prior_1d(
@@ -345,8 +345,8 @@ class Drain(MaudParameter):
         self.prior_input = prior_input
         self.init_input = init_input
         self.non_negative = False
-        self.default_loc = 0
-        self.default_scale = 1
+        self.default_loc = 0.0
+        self.default_scale = 1.0
         self.prior = get_ind_prior_2d(
             self.prior_input,
             self.ids,
@@ -402,7 +402,7 @@ class ConcEnzyme(MaudParameter):
         self.default_loc = -2.3
         self.default_scale = 2.0
         self.default_loc = 0.5
-        self.default_scale = 1
+        self.default_scale = 1.0
         self.prior = get_ind_prior_2d(
             self.prior_input,
             self.ids,
@@ -571,8 +571,8 @@ class Psi(MaudParameter):
         self.init_input = init_input
         self.id_components = [[IdComponent.EXPERIMENT]]
         self.non_negative = False
-        self.default_loc = 0
-        self.default_scale = 2
+        self.default_loc = 0.0
+        self.default_scale = 2.0
         self.prior = get_ind_prior_1d(
             self.prior_input,
             self.ids[0],

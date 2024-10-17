@@ -32,6 +32,7 @@ class MaudConfig:
     :param cmdstanpy_config: Arguments to cmdstanpy.CmdStanModel.sample.
     :param reject_non_steady: Reject draws if a non-steady state is encountered.
     :param ode_config: Configuration for Stan's ode solver.
+    :param quench_config: Configuration for the times at which quenching is simulated.
     :param stanc_options: Valid choices for CmdStanModel argument `stanc_options`.
     :param cpp_options: Valid choices for CmdStanModel `cpp_options`.
     :param variational_options: Arguments for CmdStanModel.variational.
