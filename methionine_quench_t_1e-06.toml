@@ -1,0 +1,913 @@
+[[experiment]]
+id = "dataset1"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.85982e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 2.88792e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000344085
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 2.42743e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 6.20654e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.00105
+error_scale = 9.96e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000719
+error_scale = 7.26e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 1.9e-5
+error_scale = 1.9e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 9.7e-5
+error_scale = 1.03e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000131
+error_scale = 1.33e-5
+
+
+[[experiment]]
+id = "dataset2"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 9.03922e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 6.59858e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000868391
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 6.07577e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 0.000162914
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001438
+error_scale = 0.0001505
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000963
+error_scale = 0.0001
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 0.000301
+error_scale = 3.27e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 6.5e-5
+error_scale = 6.6e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000153
+error_scale = 1.49e-5
+
+
+[[experiment]]
+id = "dataset3"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 2.20788e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 2.33425e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 3.79549e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 4.17558e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 2.49666e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.000791
+error_scale = 8.19e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000638
+error_scale = 6.68e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 2e-6
+error_scale = 2e-7
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 0.000153
+error_scale = 1.5e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000105
+error_scale = 1.1e-5
+
+[[experiment.enzyme_knockouts]]
+enzyme = "BHMT1"
+
+
+[[experiment]]
+id = "dataset4"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 2.47787e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.63135e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000415604
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.67198e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 7.35134e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001052
+error_scale = 9.75e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000628
+error_scale = 6.32e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 5.2e-5
+error_scale = 5.2e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 2.1e-5
+error_scale = 2.1e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000134
+error_scale = 1.36e-5
+
+
+[[experiment]]
+id = "dataset5"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 6.28089e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.83755e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000471052
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.61834e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 8.31684e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.000992
+error_scale = 9.55e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000607
+error_scale = 6.22e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 1.8e-5
+error_scale = 1.8e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 8.6e-5
+error_scale = 8.7e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000132
+error_scale = 1.39e-5
+
+
+[[experiment]]
+id = "dataset6"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.346e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 2.22859e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.0004692
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.61979e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 8.28875e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001088
+error_scale = 0.0001153
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.00063
+error_scale = 6.31e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 4e-5
+error_scale = 3.8e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 7.5e-5
+error_scale = 7.7e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000135
+error_scale = 1.39e-5
+
+
+[[experiment]]
+id = "dataset7"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.57642e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.32269e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000390654
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.12547e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 6.93857e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001011
+error_scale = 9.9e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000632
+error_scale = 6.66e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 1.6e-5
+error_scale = 1.6e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 8.5e-5
+error_scale = 8.5e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000188
+error_scale = 2.04e-5
+
+
+[[experiment]]
+id = "dataset8"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.44592e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.64494e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000441603
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.43566e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 0.000132964
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.000886
+error_scale = 8.56e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000641
+error_scale = 6.61e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 1.1e-5
+error_scale = 1.1e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 7.5e-5
+error_scale = 7.4e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000149
+error_scale = 1.54e-5
+
+
+[[experiment]]
+id = "dataset9"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.62629e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.91443e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000311244
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.64376e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 7.83991e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001125
+error_scale = 0.0001195
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000641
+error_scale = 6.57e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 6.2e-5
+error_scale = 6.2e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 9.5e-5
+error_scale = 9.6e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000134
+error_scale = 1.4e-5
+
+
+[[experiment]]
+id = "dataset10"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.33782e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.98152e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000492684
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.75368e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 6.13645e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001175
+error_scale = 0.0001166
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000699
+error_scale = 7.37e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 5.8e-5
+error_scale = 5.9e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 9.2e-5
+error_scale = 9.3e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000129
+error_scale = 1.33e-5
+
+
+[[experiment]]
+id = "dataset11"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.23046e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.78649e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000600746
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.60041e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 8.67662e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.000951
+error_scale = 8.95e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000633
+error_scale = 6.45e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 0.000202
+error_scale = 2.06e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 6.1e-5
+error_scale = 6.1e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000134
+error_scale = 1.41e-5
+
+
+[[experiment]]
+id = "dataset12"
+is_train = true
+is_test = false
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 1.09662e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 5.15028e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000623636
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 5.17904e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 0.000112297
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001106
+error_scale = 0.0001122
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000588
+error_scale = 5.79e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 6e-5
+error_scale = 6.2e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 0.0001
+error_scale = 9.7e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.000138
+error_scale = 1.43e-5
+
+
+[[experiment]]
+id = "validation"
+is_train = true
+is_test = true
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "5mthf"
+compartment = "c"
+value = 4.04103e-9
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "ahcys"
+compartment = "c"
+value = 3.89673e-7
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "amet"
+compartment = "c"
+value = 0.000344844
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "hcys-L"
+compartment = "c"
+value = 3.63807e-6
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "mic"
+metabolite = "met-L"
+compartment = "c"
+value = 7.94351e-5
+error_scale = 0.1
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "AHC"
+value = 0.001064
+error_scale = 0.000105
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "CBS"
+value = 0.000637
+error_scale = 6.4e-5
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "GNMT"
+value = 6e-6
+error_scale = 6e-7
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "MS"
+value = 9.5e-5
+error_scale = 9.5e-6
+
+[[experiment.measurements]]
+target_type = "flux"
+reaction = "PROT"
+value = 0.00012
+error_scale = 1.2e-5
+
+
