@@ -1,7 +1,3 @@
-[build-system]
-requires = ["setuptools", "cmdstanpy >= 1.2.1", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "maud-metabolic-models"
 version = "0.7.1.0"
@@ -24,7 +20,7 @@ readme = "README.rst"
 requires-python = ">=3.10"
 dependencies = [
     "pip >= 20",
-    "arviz >= 0.18.0",
+    "arviz",
     "importlib_resources >= 3.2",
     "numpy",
     "scipy",
@@ -61,28 +57,6 @@ development = [
 homepage = "https://github.com/biosustain/Maud"
 download = "https://pypi.org/project/maud-metabolic-models/"
 documentation = "https://maud-metabolic-models.readthedocs.io"
-
-[tool.setuptools]
-include-package-data = true
-packages = [
-    # python packages
-    "maud",
-    "maud.data_model",
-    # non-python code packages
-    "maud.stan",
-    # data packages
-    "maud.data",
-    "maud.data.example_inputs",
-    "maud.data.example_inputs.example_ode",
-    "maud.data.example_inputs.linear",
-    "maud.data.example_inputs.methionine",
-    "maud.data.example_inputs.linear_multidgf",
-    "maud.data.example_outputs",
-    "maud.data.example_outputs.linear",
-    "maud.data.example_outputs.linear.user_input",
-]
-[tool.setuptools.package-data]
-"*" = ["*.stan", "*.json", "*.toml"]
 
 [tool.black]
 line-length = 80
