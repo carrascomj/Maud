@@ -18,7 +18,7 @@ measurements = [
 
 [[experiment]]
 id = "dataset2"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 3.33e-06, error_scale = 0.1},
@@ -35,7 +35,7 @@ measurements = [
 
 [[experiment]]
 id = "dataset3"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 1.02e-05, error_scale = 0.1},
@@ -54,7 +54,7 @@ enzyme = "BHMT1"
 
 [[experiment]]
 id = "dataset4"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 1.19e-06, error_scale = 0.1},
@@ -111,7 +111,7 @@ measurements = [
 
 [[experiment]]
 id = "dataset7"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 5.03e-06, error_scale = 0.1},
@@ -130,7 +130,7 @@ measurements = [
 
 [[experiment]]
 id = "dataset8"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 4.29e-06, error_scale = 0.1},
@@ -185,7 +185,7 @@ measurements = [
 
 [[experiment]]
 id = "dataset11"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c",value = 3.55e-06, error_scale = 0.1},
@@ -219,7 +219,7 @@ measurements = [
 
 [[experiment]]
 id = "validation"
-is_train = false
+is_train = true
 is_test = true
 measurements = [
  {target_type = "mic", metabolite = "5mthf", compartment = "c", value = 5.68e-06, error_scale = 0.1},
